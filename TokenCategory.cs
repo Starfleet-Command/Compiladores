@@ -8,7 +8,6 @@ namespace Buttercup {
         ADD, //
         AND, //
         ASSIGN, //
-        BACKSLASH, //
         BRACKET_OPEN, //
         BRACKET_CLOSE, //
         BREAK, //

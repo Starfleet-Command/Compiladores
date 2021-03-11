@@ -16,42 +16,38 @@ namespace Buttercup {
 
         static readonly Regex regex = new Regex(
             @"
-                (?<ListElement>       [,]       )
-              | (?<Backslash>       [\\]       )
-              | (?<BracketOpen>       [{]       )
-              | (?<BracketClose>       [}]      )
-              | (?<SqBracketOpen>       [\[]       )
-              | (?<SqBracketClose>       [\]]      )
-              | (?<CarriageReturn>       [\r]      )
-              | (?<Tab>       [\t]      )
+                (?<ListElement>       ,       )
+              | (?<BracketOpen>       \{       )
+              | (?<BracketClose>       \}      )
+              | (?<SqBracketOpen>       \[       )
+              | (?<SqBracketClose>       \]      )
+              | (?<CarriageReturn>       \\r      )
+              | (?<MultiComment>        \(\*.*?\*\)       )
               | (?<Elif>       elif       )
               | (?<Else>       else       )
               | (?<Newline>    \n        )
               | (?<WhiteSpace> \s        )     # Must go after Newline.
               | (?<And>        and       )
-              | (?<OpComp>       [<>]       )
-              | (?<LessEqual>       [<=]       )
+              | (?<OpComp>       <>       )
+              | (?<LessEqual>       <=       )
               | (?<Less>       [<]       )
-              | (?<MoreEqual>       [>=]       )
+              | (?<MoreEqual>       >=       )
               | (?<More>       [>]       )
               | (?<Add>       [+]       )
               | (?<Mul>        [*]       )
-              | (?<SingleComment>        [--(.*)]       )
-              | (?<MultiComment>        [\(\*(.*)\*\)]       )
+              | (?<SingleComment>        \-\-(.*)       )
               | (?<Mod>        [%]       )
-              | (?<Subtract>        [-]       )
+              | (?<Subtract>        \-       )
               | (?<ParOpen>    [(]       )
               | (?<ParClose>   [)]       )
-              | (?<EqualTo>    [==]       )
-              | (?<Assign>     [=]{1}       )
-              | (?<True>       [true]      )
-              | (?<False>      [false]    )
-              | (?<IntLiteral> -?[0-9]\d*      )
-              | (?<Decrease>       [dec]      )
-              | (?<Increase>       [inc]      )
+              | (?<EqualTo>    ==       )
+              | (?<Assign>     =       )
+              | (?<True>       true      )
+              | (?<False>      false    )
+              | (?<IntLiteral> \-?[0-9]\d*      )
+              | (?<Decrease>       dec      )
+              | (?<Increase>       inc      )
               | (?<Div>       [/]      )
-              | (?<SingleQuote>       [']      )
-              | (?<DoubleQuote>       [TODO]      )
               | (?<End>        end       )
               | (?<Or>         or       )
               | (?<Not>        not       )
@@ -64,7 +60,7 @@ namespace Buttercup {
               | (?<Then>       then      )
               | (?<While>      while        )
               | (?<UnicodeChar> \\u[a-f0-9]{6}       )
-              | (?<String>      '[a-zA-Z0-9 ]+'       )
+              | (?<String>      ""[a-zA-Z0-9 ]*""       )
               | (?<Char>      '[a-zA-Z0-9 ]'       )
               | (?<Identifier> [a-zA-Z0-9_]+ )     # Must go after all keywords
               | (?<IllegalChar>      .         )     # Must be last: match any other character.
@@ -79,7 +75,6 @@ namespace Buttercup {
                 {"And", TokenCategory.AND},
                 {"Add", TokenCategory.ADD},
                 {"Assign", TokenCategory.ASSIGN},
-                {"Backslash", TokenCategory.BACKSLASH},
                 {"BracketOpen", TokenCategory.BRACKET_OPEN},
                 {"BracketClose", TokenCategory.BRACKET_CLOSE},
                 {"Break", TokenCategory.BREAK},
@@ -87,7 +82,6 @@ namespace Buttercup {
                 {"Char", TokenCategory.CHAR},
                 {"Decrease", TokenCategory.DEC},
                 {"Div", TokenCategory.DIV},
-                {"DoubleQuote", TokenCategory.DQUOTE},
                 {"Do", TokenCategory.DO},
                 {"Elif", TokenCategory.ELIF},
                 {"Else", TokenCategory.ELSE},
@@ -118,11 +112,9 @@ namespace Buttercup {
                 {"SingleComment", TokenCategory.SINGLE_COMMENT},
                 {"Subtract", TokenCategory.SUBTR},
                 {"String", TokenCategory.STRING},
-                {"SingleQuote", TokenCategory.SQUOTE},
                 {"SqBracketOpen", TokenCategory.SQUARE_OPEN},
                 {"SqBracketClose", TokenCategory.SQUARE_CLOSE},
                 {"True", TokenCategory.TRUE},
-                {"Tab", TokenCategory.TAB},
                 {"Then", TokenCategory.THEN},
                 {"UnicodeChar", TokenCategory.UNICODE_CHAR},
                 {"Var", TokenCategory.VAR},
@@ -148,7 +140,7 @@ namespace Buttercup {
                     columnStart = m.Index + m.Length;
 
                 } else if (m.Groups["WhiteSpace"].Success
-                    || m.Groups["Comment"].Success) {
+                    || m.Groups["MultiComment"].Success || m.Groups["SingleComment"].Success) {
 
                     // Skip white space and comments.
 
