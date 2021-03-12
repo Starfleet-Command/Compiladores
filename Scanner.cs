@@ -22,7 +22,7 @@ namespace Buttercup {
               | (?<SqBracketOpen>       \[       )
               | (?<SqBracketClose>       \]      )
               | (?<CarriageReturn>       \\r      )
-              | (?<MultiComment>        \(\*.*?\*\)       )
+              | (?<MultiComment>        \(\*[\s\S]*?\*\)     )
               | (?<Elif>       elif       )
               | (?<Else>       else       )
               | (?<Newline>    \n        )
@@ -35,7 +35,7 @@ namespace Buttercup {
               | (?<More>       [>]       )
               | (?<Add>       [+]       )
               | (?<Mul>        [*]       )
-              | (?<SingleComment>        \-\-(.*)       )
+              | (?<SingleComment>        \-\-.*       )
               | (?<Mod>        [%]       )
               | (?<Subtract>        \-       )
               | (?<ParOpen>    [(]       )
@@ -60,14 +60,15 @@ namespace Buttercup {
               | (?<Then>       then      )
               | (?<While>      while        )
               | (?<UnicodeChar> \\u[a-f0-9]{6}       )
-              | (?<String>      ""[a-zA-Z0-9 ]*""       )
-              | (?<Char>      '[a-zA-Z0-9 ]'       )
+              | (?<String>      ""[^""\\\n]*(?:\\.[^""\\\n]*)*""      )
+              | (?<Char>      '[^']'|'[\\t\\n\\r\\\'\""]{2}'       )
               | (?<Identifier> [a-zA-Z0-9_]+ )     # Must go after all keywords
               | (?<IllegalChar>      .         )     # Must be last: match any other character.
             ",
             RegexOptions.IgnorePatternWhitespace
                 | RegexOptions.Compiled
                 | RegexOptions.Multiline
+                
             );
 
         static readonly IDictionary<string, TokenCategory> tokenMap =
@@ -86,7 +87,7 @@ namespace Buttercup {
                 {"Elif", TokenCategory.ELIF},
                 {"Else", TokenCategory.ELSE},
                 {"End", TokenCategory.EOF},
-                {"EqualTo", TokenCategory.EOF},
+                {"EqualTo", TokenCategory.EQUAL_TO},
                 {"False", TokenCategory.FALSE},
                 {"Identifier", TokenCategory.IDENTIFIER},
                 {"If", TokenCategory.IF},
@@ -139,12 +140,22 @@ namespace Buttercup {
                     row++;
                     columnStart = m.Index + m.Length;
 
-                } else if (m.Groups["WhiteSpace"].Success
-                    || m.Groups["MultiComment"].Success || m.Groups["SingleComment"].Success) {
+                } else if (m.Groups["WhiteSpace"].Success || m.Groups["SingleComment"].Success) 
+                {
+
+                }
+
+                else if(m.Groups["MultiComment"].Success)
+                {
+                    string texto= m.ToString();
+                    int numLines = texto.Split('\n').Length;
+                    row = row+(numLines-1);
+
+                }
 
                     // Skip white space and comments.
 
-                } else if (m.Groups["Other"].Success) {
+                 else if (m.Groups["Other"].Success) {
 
                     // Found an illegal character.
                     result.AddLast(

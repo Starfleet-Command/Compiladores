@@ -15,7 +15,6 @@ namespace Buttercup {
         CARRIAGE_RETURN, //
         DEC, //
         DIV, //
-        DQUOTE, // PREGUNTAR
         DO, //
         ELIF, //
         ELSE, //
