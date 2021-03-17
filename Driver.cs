@@ -1,12 +1,16 @@
 /*
   Drac Compiler main driver class
+
+  Rubén Sánchez             A01021759
+  Juan Francisco Gortarez   A01021926
+  Martín Alegría            A01022216
 */
 
 using System;
 using System.IO;
 using System.Text;
 
-namespace Buttercup {
+namespace Drac {
 
     public class Driver {
 

@@ -1,8 +1,12 @@
 /*
   Drac compiler - Token categories for the scanner.
+
+  Rubén Sánchez             A01021759
+  Juan Francisco Gortarez   A01021926
+  Martín Alegría            A01022216
 */
 
-namespace Buttercup {
+namespace Drac {
 
     enum TokenCategory {
         ADD, //

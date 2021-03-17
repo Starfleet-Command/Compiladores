@@ -1,14 +1,17 @@
 /*
   Drac compiler - This class performs the lexical analysis,
   (a.k.a. scanning).
- 
+
+  Rubén Sánchez             A01021759
+  Juan Francisco Gortarez   A01021926
+  Martín Alegría            A01022216
 */
 
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Buttercup {
+namespace Drac {
 
     class Scanner {
 
