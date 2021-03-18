@@ -22,7 +22,7 @@ namespace Drac {
         DO, //
         ELIF, //
         ELSE, //
-        EOF, //PREGUNTAR
+        EOF, //
         EQUAL_TO, //
         FALSE, //
         IDENTIFIER, //
@@ -53,7 +53,6 @@ namespace Drac {
         SQUARE_OPEN, //
         SQUARE_CLOSE, //
         TAB, //
-        THEN, //
         TRUE, //
         UNICODE_CHAR, //
         VAR, //

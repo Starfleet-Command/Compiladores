@@ -26,11 +26,11 @@ namespace Drac {
               | (?<SqBracketClose>       \]      )
               | (?<CarriageReturn>       \\r      )
               | (?<MultiComment>        \(\*[\s\S]*?\*\)     )
-              | (?<Elif>       elif       )
-              | (?<Else>       else       )
+              | (?<Elif>       elif\b       )
+              | (?<Else>       else\b       )
               | (?<Newline>    \n        )
               | (?<WhiteSpace> \s        )     # Must go after Newline.
-              | (?<And>        and       )
+              | (?<And>        and\b       )
               | (?<OpComp>       <>       )
               | (?<LessEqual>       <=       )
               | (?<Less>       [<]       )
@@ -45,23 +45,21 @@ namespace Drac {
               | (?<ParClose>   [)]       )
               | (?<EqualTo>    ==       )
               | (?<Assign>     =       )
-              | (?<True>       true      )
-              | (?<False>      false    )
+              | (?<True>       true\b      )
+              | (?<False>      false\b    )
               | (?<IntLiteral> \-?[0-9]\d*      )
-              | (?<Decrease>       dec      )
-              | (?<Increase>       inc      )
+              | (?<Decrease>       dec\b      )
+              | (?<Increase>       inc\b      )
               | (?<Div>       [/]      )
-              | (?<End>        end       )
-              | (?<Or>         or       )
-              | (?<Not>        not       )
-              | (?<Var>        var      )
-              | (?<Return>     return       )
-              | (?<Do>         do       )
+              | (?<Or>         or\b       )
+              | (?<Not>        not\b       )
+              | (?<Var>        var\b      )
+              | (?<Return>     return\b       )
+              | (?<Do>         do\b       )
               | (?<Semicolon>  [;]       )
-              | (?<Break>      break       )
-              | (?<If>         if        )
-              | (?<Then>       then      )
-              | (?<While>      while        )
+              | (?<Break>      break\b       )
+              | (?<If>         if\b        )
+              | (?<While>      while\b        )
               | (?<UnicodeChar> \\u[a-f0-9]{6}       )
               | (?<String>      ""[^""\\\n]*(?:\\.[^""\\\n]*)*""      )
               | (?<Char>      '[^']'|'[\\t\\n\\r\\\'\""]{2}'       )
@@ -89,7 +87,6 @@ namespace Drac {
                 {"Do", TokenCategory.DO},
                 {"Elif", TokenCategory.ELIF},
                 {"Else", TokenCategory.ELSE},
-                {"End", TokenCategory.EOF},
                 {"EqualTo", TokenCategory.EQUAL_TO},
                 {"False", TokenCategory.FALSE},
                 {"Identifier", TokenCategory.IDENTIFIER},
@@ -119,7 +116,6 @@ namespace Drac {
                 {"SqBracketOpen", TokenCategory.SQUARE_OPEN},
                 {"SqBracketClose", TokenCategory.SQUARE_CLOSE},
                 {"True", TokenCategory.TRUE},
-                {"Then", TokenCategory.THEN},
                 {"UnicodeChar", TokenCategory.UNICODE_CHAR},
                 {"Var", TokenCategory.VAR},
                 {"While", TokenCategory.WHILE},
