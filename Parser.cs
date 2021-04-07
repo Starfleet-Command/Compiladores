@@ -31,6 +31,50 @@
  *      Operator›           ::=  "&" | "<" | "+" | "*"
  *      SimpleExpression    ::=  Identifier | IntLiteral | "#t" | "#f"
  *                               | "(" Expression ")" | "-" SimpleExpression
+ *
+ *  Drac LL(1) Grammar:
+ *  
+ *  Program       ::= DefList
+ *  DefList       ::= Def*
+ *  Def             ::= Var-Def | Fun-Def
+ *  Var-Def         ::= "var" Var-List ";"
+ *  Var-List      ::= ‹id-list›
+ *  ‹id-list›       ::= <id> ("," <id>)*
+ *  Fun-Def         ::= <id> "(" ‹param-list› ")" "{" ‹var-def-list› ‹stmt-list› "}"
+ *  ‹param-list›    ::= ‹id-list›*
+ *  ‹var-def-list›  ::= <var-def>+
+ *  ‹stmt-list›     ::= ‹stmt›+
+ *  ‹stmt›          ::= ‹stmt-assign› | ‹stmt-incr› | ‹stmt-decr› | ‹stmt-fun-call› | ‹stmt-if› | ‹stmt-while› | ‹stmt-do-while› | ‹stmt-break› | ‹stmt-return› | ‹stmt-empty›
+ *  ‹stmt-assign›   ::= <id> "=" ‹expr› ";"
+ *  ‹stmt-incr›     ::= "inc" <id> ";"
+ *  ‹stmt-decr›     ::= "dec" <id> ";"
+ *  ‹stmt-fun-call› ::= ‹fun-call› ";"
+ *  ‹fun-call›      ::= <id> "(" ‹expr-list› ")"
+ *  ‹expr-list›     ::= <expr> ("," <expr>)*
+ *  ‹stmt-if›       ::= "if" "(" ‹expr› ")" "{" ‹stmt-list› "}" ‹else-if-list› ‹else›
+ *  ‹else-if-list›  ::= ("elif" "(" ‹expr› ")" "{" ‹stmt-list› "}")*
+ *  ‹else›          ::= ("else" "{" ‹stmt-list› "}")?
+ *  ‹stmt-while›    ::= "while" "(" ‹expr› ")" "{" ‹stmt-list› "}"
+ *  ‹stmt-do-while› ::= "do" "{" ‹stmt-list› "}" "while" "(" ‹expr› ")" ";"
+ *  ‹stmt-break›    ::= "break" ";"
+ *  ‹stmt-return›   ::=	"return" ‹expr› ";"
+ *  ‹stmt-empty›    ::= ";"
+ *  ‹expr›          ::= ‹expr-or›
+ *  ‹expr-or›       ::= ‹expr-and› ("or" ‹expr-and›)+
+ *  ‹expr-and›      ::= ‹expr-comp› ("and" ‹expr-comp›)+
+ *  ‹expr-comp›     ::= ‹expr-rel› (‹op-comp› ‹expr-rel›)+
+ *  ‹op-comp›       ::= "==" | "<>"
+ *  ‹expr-rel›      ::= ‹expr-add› (‹op-rel› ‹expr-add›)+
+ *  ‹op-rel›        ::= "<" | ">" | "<=" | ">="
+ *  ‹expr-add›      ::= ‹expr-mul› (‹op-add› ‹expr-mul›)+
+ *  ‹op-add›        ::= "+" | "-"
+ *  ‹expr-mul›      ::= ‹expr-unary› (‹op-mul› ‹expr-unary›)+
+ *  ‹op-mul›        ::= "*" | "/" | "%"
+ *  ‹expr-unary›    ::= ‹op-unary›* ‹expr-primary›
+ *  ‹op-unary›      ::= "+" | "-" | "not"
+ *  ‹expr-primary›  ::= ‹id› | ‹fun-call› | ‹array› | ‹lit› | "(" ‹expr› ")"
+ *  ‹array›         ::= "[" ‹expr-list› "]"
+ *  ‹lit›           ::= ‹lit-bool› | ‹lit-int› | ‹lit-char› | ‹lit-str›
  */
 
 using System;
