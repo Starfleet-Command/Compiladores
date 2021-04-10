@@ -3,10 +3,6 @@
    (C) 2021 Ariel Ortiz, ITESM CEM.
 *)
 
--- uyefgeuykf
-'n'
-'\t'
-
 main() {
     prints("hello, world\n");
     return 42;

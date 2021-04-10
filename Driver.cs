@@ -57,7 +57,7 @@ namespace Drac {
             try {
                 var inputPath = args[0];
                 var input = File.ReadAllText(inputPath);
-
+                
                 Console.WriteLine(
                     $"===== Tokens from: \"{inputPath}\" =====");
                 var count = 1;
@@ -65,12 +65,12 @@ namespace Drac {
                     Console.WriteLine($"[{count++}] {tok}");
                 }
                 
-                /*
+                
                 var parser = new Parser(
                     new Scanner(input).Scan().GetEnumerator());
                 parser.Program();
                 Console.WriteLine("Syntax OK.");
-                */
+                
 
             } catch (FileNotFoundException e) {
                 Console.Error.WriteLine(e.Message);

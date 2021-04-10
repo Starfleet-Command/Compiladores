@@ -4,10 +4,10 @@
 #Juan Francisco Gortarez   A01021926
 #Martín Alegría            A01022216
 
-drac.exe: Driver.cs Scanner.cs Token.cs TokenCategory.cs \
+drac.exe: Driver.cs Scanner.cs Token.cs TokenCategory.cs Parser.cs \
 	SyntaxError.cs
 
-	mcs -out:drac.exe Driver.cs Scanner.cs Token.cs TokenCategory.cs \
+	mcs -out:drac.exe Driver.cs Scanner.cs Token.cs TokenCategory.cs Parser.cs \
 	SyntaxError.cs
 
 clean:
