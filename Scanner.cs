@@ -60,9 +60,9 @@ namespace Drac {
               | (?<Break>      break\b       )
               | (?<If>         if\b        )
               | (?<While>      while\b        )
-              | (?<UnicodeChar> \\u[a-f0-9]{6}       )
+              | (?<UnicodeChar> '\\u[a-fA-F0-9]{6}'       )
               | (?<String>      ""[^""\\\n]*(?:\\.[^""\\\n]*)*""      )
-              | (?<Char>      '[^']'|'[\\t\\n\\r\\\'\""]{2}'       )
+              | (?<Char>      '\\[tnr\\'""]'|'[^']'       )
               | (?<Identifier> [a-zA-Z0-9_]+ )     # Must go after all keywords
               | (?<IllegalChar>      .         )     # Must be last: match any other character.
             ",

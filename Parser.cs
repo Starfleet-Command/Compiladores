@@ -608,6 +608,10 @@ namespace Drac {
                 Expect(TokenCategory.CHAR);
                 break;
             
+            case TokenCategory.UNICODE_CHAR:
+                Expect(TokenCategory.UNICODE_CHAR);
+                break;
+            
             case TokenCategory.TRUE:
                 Expect(TokenCategory.TRUE);
                 break;
