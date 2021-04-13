@@ -1,20 +1,9 @@
 /*
-  Buttercup compiler - This class performs the syntactic analysis,
-  (a.k.a. parsing).
-  Copyright (C) 2013-2021 Ariel Ortiz, ITESM CEM
+  Drac Compiler scanner class
 
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  Rubén Sánchez             A01021759
+  Juan Francisco Gortarez   A01021926
+  Martín Alegría            A01022216
 */
 
 /*
@@ -42,7 +31,7 @@
  *  Fun-Def         ::= <id> "(" ‹param-list› ")" "{" ‹var-def-list› ‹stmt-list› "}"
  *  ‹param-list›    ::= ‹id-list›?
  *  ‹var-def-list›  ::= <var-def>*
- *  ‹stmt-list›     ::= ‹stmt›+
+ *  ‹stmt-list›     ::= ‹stmt›*
  *  ‹stmt›          ::= ‹stmt-assign› | ‹stmt-incr› | ‹stmt-decr› | ‹stmt-fun-call› | ‹stmt-if› | ‹stmt-while› | ‹stmt-do-while› | ‹stmt-break› | ‹stmt-return› | ‹stmt-empty›
  *  ‹stmt-assign›   ::= <id> "=" ‹expr› ";"
  *  ‹stmt-incr›     ::= "inc" <id> ";"
