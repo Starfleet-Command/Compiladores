@@ -130,6 +130,22 @@ namespace Drac {
                 TokenCategory.SUBTR,
                 TokenCategory.NOT
             };
+        
+        static readonly ISet<TokenCategory> firstOfExpression =
+            new HashSet<TokenCategory>() {
+                TokenCategory.IDENTIFIER,
+                TokenCategory.INT_LITERAL,
+                TokenCategory.STRING,
+                TokenCategory.CHAR,
+                TokenCategory.UNICODE_CHAR,
+                TokenCategory.TRUE,
+                TokenCategory.FALSE,
+                TokenCategory.SQUARE_OPEN,
+                TokenCategory.PARENTHESIS_OPEN,
+                TokenCategory.ADD,
+                TokenCategory.SUBTR,
+                TokenCategory.NOT
+            };
 
         IEnumerator<Token> tokenStream;
 
@@ -325,7 +341,7 @@ namespace Drac {
         }
 
         public void ExprList() {
-            if(CurrentToken!=TokenCategory.PARENTHESIS_CLOSE){
+            if(firstOfExpression.Contains(CurrentToken)){
                 Expression();
 
                 while (CurrentToken==TokenCategory.LIST_ELEMENT) {
@@ -620,7 +636,7 @@ namespace Drac {
                 break;
 
             default:
-                throw new SyntaxError(firstOfOperatorUnary,
+                throw new SyntaxError(firstOfExpression,
                                       tokenStream.Current);
             }
         }

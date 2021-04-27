@@ -57,14 +57,14 @@ namespace Drac {
             try {
                 var inputPath = args[0];
                 var input = File.ReadAllText(inputPath);
-                
+                /*
                 Console.WriteLine(
                     $"===== Tokens from: \"{inputPath}\" =====");
                 var count = 1;
                 foreach (var tok in new Scanner(input).Scan()) {
                     Console.WriteLine($"[{count++}] {tok}");
                 }
-                
+                */
                 
                 var parser = new Parser(
                     new Scanner(input).Scan().GetEnumerator());
@@ -72,9 +72,14 @@ namespace Drac {
                 Console.WriteLine("Syntax OK.");
                 
 
-            } catch (FileNotFoundException e) {
-                Console.Error.WriteLine(e.Message);
-                Environment.Exit(1);
+            } catch (Exception e) {
+
+                if (e is FileNotFoundException || e is SyntaxError) {
+                    Console.Error.WriteLine(e.Message);
+                    Environment.Exit(1);
+                }
+
+                throw;
             }
         }
 
