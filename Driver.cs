@@ -14,12 +14,13 @@ namespace Drac {
 
     public class Driver {
 
-        const string VERSION = "0.2";
+        const string VERSION = "0.3";
 
         //-----------------------------------------------------------
         static readonly string[] ReleaseIncludes = {
             "Lexical analysis",
-            "Syntactic analysis"
+            "Syntactic analysis",
+            "AST construction"
         };
 
         //-----------------------------------------------------------
@@ -68,8 +69,10 @@ namespace Drac {
                 
                 var parser = new Parser(
                     new Scanner(input).Scan().GetEnumerator());
-                parser.Program();
+                var program = parser.Program();
                 Console.WriteLine("Syntax OK.");
+
+                Console.Write(program.ToStringTree());
                 
 
             } catch (Exception e) {

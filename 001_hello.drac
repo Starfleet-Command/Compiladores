@@ -3,7 +3,14 @@
    (C) 2021 Ariel Ortiz, ITESM CEM.
 *)
 
-main() {
-    prints("hello, world\n");
-    return 42;
+var hello, hello3;
+var hello2;
+
+main(integer, str, count) {
+    var hello4;
+    var hello5, hello6;
+}
+
+addition(){
+    var hello7;
 }

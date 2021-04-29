@@ -168,25 +168,30 @@ namespace Drac {
             }
         }
 
-        public void Program() {
+        public Node Program() {
+
+            var defList = new DefinitionList();
 
             while (firstOfDefinition.Contains(CurrentToken)) {
-                Definition();
+                defList.Add(Definition());
             }
 
             Expect(TokenCategory.EOF);
+
+            return new Program() {
+                defList
+            };
         }
 
-        public void Definition() {
+        public Node Definition() {
+
             switch (CurrentToken) {
 
             case TokenCategory.VAR:
-                VarDef();
-                break;
+                return VarDef();
 
             case TokenCategory.IDENTIFIER:
-                FunDef();
-                break;
+               return FunDef();
 
             default:
                 throw new SyntaxError(firstOfDefinition,
@@ -194,47 +199,74 @@ namespace Drac {
             }
         }
 
-        public void VarDef() {
-            Expect(TokenCategory.VAR);
-            VarList();
+        public Node VarDef() {
+
+            var varToken = Expect(TokenCategory.VAR);
+
+            var varList = VarList();
+            
             Expect(TokenCategory.SEMICOLON);
+
+            var result = new VarDef(){ varList };
+            result.AnchorToken = varToken;
+
+            return result;
         }
 
-        public void VarList() {
-            IdList();
+        public Node VarList() {
+            return IdList();
         }
 
-        public void IdList() {
-            Expect(TokenCategory.IDENTIFIER);
+        public Node IdList() {
+            var result = new IdList();
+
+            result.Add(new Identifier() {
+                AnchorToken = Expect(TokenCategory.IDENTIFIER)
+            });
 
             while (CurrentToken==TokenCategory.LIST_ELEMENT) {
                 Expect(TokenCategory.LIST_ELEMENT);
-                Expect(TokenCategory.IDENTIFIER);
+                result.Add(new Identifier() {
+                    AnchorToken = Expect(TokenCategory.IDENTIFIER)
+                });
             }
 
+            return result;
         }
 
-        public void FunDef() {
-            Expect(TokenCategory.IDENTIFIER);
+        public Node FunDef() {
+            var funToken = Expect(TokenCategory.IDENTIFIER);
             Expect(TokenCategory.PARENTHESIS_OPEN);
-            ParamList();
+            var parList = ParamList();
             Expect(TokenCategory.PARENTHESIS_CLOSE);
             Expect(TokenCategory.BRACKET_OPEN);
-            VarDefList();
-            StmtList();
+            var varDList = VarDefList();
+            //var statementList = StmtList();
             Expect(TokenCategory.BRACKET_CLOSE);
+
+            //var result = new FunDef() { parList, varDList, statementList };
+            var result = new FunDef() { parList, varDList};
+            result.AnchorToken = funToken;
+
+            return result;
         }
 
-        public void ParamList() {
+        public Node ParamList() {
+            var result = new IdList();
+
             if (CurrentToken==TokenCategory.IDENTIFIER){
-                IdList();
+                return IdList();
             }
+
+            return result;
         }
 
-        public void VarDefList() {
+        public Node VarDefList() {
+            var result = new VarDefList();
             while(CurrentToken==TokenCategory.VAR){
-                VarDef();
+                result.Add(VarDef());
             }
+            return result;
         }
 
         public void StmtList() {
