@@ -489,13 +489,18 @@ namespace Drac {
 
         public void OpComp() {
             switch (CurrentToken) {
-
+                
             case TokenCategory.EQUAL_TO:
-                Expect(TokenCategory.EQUAL_TO);
-                break;
+            var result = new EqualTo(){
+                AnchorToken= Expect(TokenCategory.EQUAL_TO)
+                };
+                return result;
 
             case TokenCategory.OP_COMP:
-                Expect(TokenCategory.OP_COMP);
+                var result = new EqualTo(){
+                AnchorToken= Expect(TokenCategory.OP_COMP)
+                };
+                return result;
                 break;
 
             default:
