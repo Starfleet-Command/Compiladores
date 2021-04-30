@@ -1,16 +1,9 @@
-(* File: 001_hello.leviathan
+(* File: 001_hello.drac
    The classical "hello, world" program.
    (C) 2021 Ariel Ortiz, ITESM CEM.
 *)
 
-var hello, hello3;
-var hello2;
-
-main(integer, str, count) {
-    var hello4;
-    var hello5, hello6;
-}
-
-addition(){
-    var hello7;
+main() {
+    prints("hello, world\n");
+    return 42;
 }

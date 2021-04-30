@@ -36,6 +36,8 @@ namespace Drac {
 
     class If: Node {}
 
+    class ElseIfList: Node {}
+
     class ElseIf: Node {}
 
     class Else: Node {}
@@ -47,6 +49,8 @@ namespace Drac {
     class Break: Node {}
 
     class Return: Node {}
+
+    class Empty: Node {}
 
     class FuncCall: Node {}
 
@@ -76,13 +80,13 @@ namespace Drac {
 
     class ExprRel: Node {}
 
-    class ExprAdd: Node {}
+    class ExpressionAdd: Node {}
 
-    class ExprMul: Node {}
+    class ExpressionMul: Node {}
 
-    class ExprUnary: Node {}
+    class ExpressionUnary: Node {}
 
-    class ExprPrimary: Node {}
+    class ExpressionPrimary: Node {}
 
     class True: Node {}
 
@@ -104,11 +108,13 @@ namespace Drac {
 
     class Add: Node {}
 
-    class Substract: Node {}
+    class Subtr: Node {}
 
     class Mul: Node {}
 
     class Div: Node {}
 
     class Mod: Node {}
+
+    class Array: Node {}
 }

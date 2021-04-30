@@ -241,11 +241,11 @@ namespace Drac {
             Expect(TokenCategory.PARENTHESIS_CLOSE);
             Expect(TokenCategory.BRACKET_OPEN);
             var varDList = VarDefList();
-            //var statementList = StmtList();
+            var statementList = StmtList();
             Expect(TokenCategory.BRACKET_CLOSE);
 
-            //var result = new FunDef() { parList, varDList, statementList };
-            var result = new FunDef() { parList, varDList};
+            var result = new FunDef() { parList, varDList, statementList };
+            
             result.AnchorToken = funToken;
 
             return result;
@@ -269,65 +269,45 @@ namespace Drac {
             return result;
         }
 
-        public void StmtList() {
+        public Node StmtList() {
+            var result = new StatementList();
             while(firstOfStatement.Contains(CurrentToken)){
-                Statement();
+                result.Add(Statement());
             }
+            return result;
         }
 
-        public void Statement() {
+        public Node Statement() {
 
             switch (CurrentToken) {
 
             case TokenCategory.IDENTIFIER:
-                Expect(TokenCategory.IDENTIFIER);
-                switch (CurrentToken) {
-
-                    case TokenCategory.ASSIGN:
-                        StmtAssignSecond();
-                        break;
-
-                    case TokenCategory.PARENTHESIS_OPEN:
-                        StmtFunCallSecond();
-                        break;
-
-                    default:
-                        throw new SyntaxError(secondOfStatement,
-                                            tokenStream.Current);
-                    }
-                break;
+                return StmtAsFun();
 
             case TokenCategory.INC:
-                StmtInc();
-                break;
+                return StmtInc();
 
             case TokenCategory.DEC:
-                StmtDec();
-                break;
+                return StmtDec();
 
             case TokenCategory.IF:
-                StmtIf();
-                break;
+                return StmtIf();
 
             case TokenCategory.WHILE:
-                StmtWhile();
-                break;
+                return StmtWhile();
 
             case TokenCategory.DO:
-                StmtDo();
-                break;
+                return StmtDo();
 
             case TokenCategory.BREAK:
-                StmtBreak();
-                break;
+                return StmtBreak();
 
             case TokenCategory.RETURN:
-                StmtReturn();
-                break;
+                return StmtReturn();
 
             case TokenCategory.SEMICOLON:
-                StmtEmpty();
-                break;
+                Expect(TokenCategory.SEMICOLON);
+                return new Empty();
 
             default:
                 throw new SyntaxError(firstOfStatement,
@@ -335,173 +315,235 @@ namespace Drac {
             }
         }
 
-        public void StmtAssignSecond() {
-            Expect(TokenCategory.ASSIGN);
-            Expression();
-            Expect(TokenCategory.SEMICOLON);
+        public Node StmtAsFun(){
+            var idToken = Expect(TokenCategory.IDENTIFIER);
+            switch (CurrentToken) {
+
+            case TokenCategory.ASSIGN:
+                Expect(TokenCategory.ASSIGN);
+                var expr = Expression();
+                Expect(TokenCategory.SEMICOLON);
+                var result = new Assignment(){expr};
+                result.AnchorToken=idToken;
+                return result;
+
+            case TokenCategory.PARENTHESIS_OPEN:
+                Expect(TokenCategory.PARENTHESIS_OPEN);
+                var exprList = ExprList();
+                Expect(TokenCategory.PARENTHESIS_CLOSE);
+                Expect(TokenCategory.SEMICOLON);
+                var result2 = new FuncCall(){ exprList };
+                result2.AnchorToken = idToken;
+                return result2;
+
+            default:
+                throw new SyntaxError(secondOfStatement,
+                                      tokenStream.Current);
+            }
+
         }
 
-        public void StmtInc() {
-            Expect(TokenCategory.INC);
-            Expect(TokenCategory.IDENTIFIER);
-            Expect(TokenCategory.SEMICOLON);
-        }
-
-        public void StmtDec() {
-            Expect(TokenCategory.DEC);
-            Expect(TokenCategory.IDENTIFIER);
-            Expect(TokenCategory.SEMICOLON);
-        }
-
-        public void StmtFunCallSecond() {
-            FunCallSecond();
-            Expect(TokenCategory.SEMICOLON);
-        }
-
-        public void FunCall() {
-            Expect(TokenCategory.IDENTIFIER);
+        public Node FunCall() {
+            var idToken = Expect(TokenCategory.IDENTIFIER);
             Expect(TokenCategory.PARENTHESIS_OPEN);
-            ExprList();
+            var exprList = ExprList();
             Expect(TokenCategory.PARENTHESIS_CLOSE);
+            Expect(TokenCategory.SEMICOLON);
+            var result = new FuncCall(){ exprList };
+            result.AnchorToken = idToken;
+            return result;
     
         }
 
-        public void FunCallSecond() {
-            Expect(TokenCategory.PARENTHESIS_OPEN);
-            ExprList();
-            Expect(TokenCategory.PARENTHESIS_CLOSE);
+        public Node StmtInc() {
+            var result = new Inc(){
+                    AnchorToken = Expect(TokenCategory.INC)
+                };
+            result.Add(new Identifier(){AnchorToken = Expect(TokenCategory.IDENTIFIER)});
+
+            Expect(TokenCategory.SEMICOLON);
+            return result;
         }
 
-        public void ExprList() {
+        public Node StmtDec() {
+            var result = new Dec(){
+                    AnchorToken = Expect(TokenCategory.DEC)
+                };
+            result.Add(new Identifier(){AnchorToken= Expect(TokenCategory.IDENTIFIER)});
+            Expect(TokenCategory.SEMICOLON);
+            return result;
+        }
+
+        public Node ExprList() {
+            var result = new ExpressionList();
             if(firstOfExpression.Contains(CurrentToken)){
-                Expression();
+                result.Add(Expression());
 
                 while (CurrentToken==TokenCategory.LIST_ELEMENT) {
                     Expect(TokenCategory.LIST_ELEMENT);
-                    Expression();
+                    result.Add(Expression());
                 }
             }
+            return result;
         }
 
-        public void StmtIf() {
-            Expect(TokenCategory.IF);
-
+        public Node StmtIf() {
+            var ifToken =  Expect(TokenCategory.IF);
             Expect(TokenCategory.PARENTHESIS_OPEN);
-            Expression();
+            var expr = Expression();
             Expect(TokenCategory.PARENTHESIS_CLOSE);
             Expect(TokenCategory.BRACKET_OPEN);
-            StmtList();
+            var stmtList = StmtList();
             Expect(TokenCategory.BRACKET_CLOSE);
-            ElseIfList();
-            Else();
+            var elif = ElseIfList();
+            var els = Else();
+
+            var result = new If() { expr, stmtList,elif,els };
+            result.AnchorToken = ifToken;
+            return result;
         }
 
-        public void ElseIfList() {
+        public Node ElseIfList() {
+            var result = new ElseIfList();
             while(CurrentToken==TokenCategory.ELIF){
-                Expect(TokenCategory.ELIF);
+                var elifNode = new ElseIf();
+                var elif= Expect(TokenCategory.ELIF);
                 Expect(TokenCategory.PARENTHESIS_OPEN);
-                Expression();
+                var expr = Expression();
+                elifNode.Add(expr);
                 Expect(TokenCategory.PARENTHESIS_CLOSE);
                 Expect(TokenCategory.BRACKET_OPEN);
-                StmtList();
+                var stmtList = StmtList();
+                elifNode.Add(stmtList);
                 Expect(TokenCategory.BRACKET_CLOSE);
+
+                elifNode.AnchorToken=elif;
+                result.Add(elifNode);
             }
+            return result;
         }
 
-        public void Else() {
+        public Node Else() {
+            var result = new Else();
             if(CurrentToken==TokenCategory.ELSE){
-                Expect(TokenCategory.ELSE);
+                var elseVar = Expect(TokenCategory.ELSE);
                 Expect(TokenCategory.BRACKET_OPEN);
-                StmtList();
+                var stmtlist = StmtList();
                 Expect(TokenCategory.BRACKET_CLOSE);
+                result.Add(stmtlist);
+                result.AnchorToken= elseVar;
             }
+            return result;
         }
 
-        public void StmtWhile() {
-            Expect(TokenCategory.WHILE);
+        public Node StmtWhile() {
+            var whileToken = Expect(TokenCategory.WHILE);
 
             Expect(TokenCategory.PARENTHESIS_OPEN);
-            Expression();
+
+            var expr = Expression();
             Expect(TokenCategory.PARENTHESIS_CLOSE);
             Expect(TokenCategory.BRACKET_OPEN);
-            StmtList();
+            var statementList = StmtList();
             Expect(TokenCategory.BRACKET_CLOSE);
+            var result = new While(){expr, statementList};
+            result.AnchorToken = whileToken;
+            return result;
         }
 
-        public void StmtDo() {
-            Expect(TokenCategory.DO);
+        public Node StmtDo() {
+            var doToken = Expect(TokenCategory.DO);
 
             Expect(TokenCategory.BRACKET_OPEN);
-            StmtList();
+            var statementList = StmtList();
             Expect(TokenCategory.BRACKET_CLOSE);
             Expect(TokenCategory.WHILE);
             Expect(TokenCategory.PARENTHESIS_OPEN);
-            Expression();
+            var expr = Expression();
             Expect(TokenCategory.PARENTHESIS_CLOSE);
             Expect(TokenCategory.SEMICOLON);
+            var result = new DoWhile(){statementList, expr};
+            result.AnchorToken = doToken;
+            return result;
         }
 
-        public void StmtBreak() {
-            Expect(TokenCategory.BREAK);
+        public Node StmtBreak() {
+            var result = new Break(){
+                AnchorToken=Expect(TokenCategory.BREAK)
+            };
             Expect(TokenCategory.SEMICOLON);
+            return result;
         }
 
-        public void StmtReturn() {
-            Expect(TokenCategory.RETURN);
-            Expression();
+        public Node StmtReturn() {
+            var returnToken = Expect(TokenCategory.RETURN);
+            
+            var expr = Expression();
             Expect(TokenCategory.SEMICOLON);
+            var result = new Return(){expr};
+            result.AnchorToken = returnToken;
+            return result;
         }
 
-        public void StmtEmpty() {
-            Expect(TokenCategory.SEMICOLON);
+        public Node Expression() {
+            return ExpressionOr();
         }
 
-        public void Expression() {
-            ExpressionOr();
-        }
-
-        public void ExpressionOr() {
-            ExpressionAnd();
+        public Node ExpressionOr() {
+            var exprAnd1 = ExpressionAnd();
 
             while(CurrentToken==TokenCategory.OR){
-                Expect(TokenCategory.OR);
-                ExpressionAnd();
+                var exprAnd2 = new Or(){
+                    AnchorToken = Expect(TokenCategory.OR)
+                };
+                exprAnd2.Add(exprAnd1);
+                exprAnd2.Add(ExpressionAnd());
+                exprAnd1 = exprAnd2;
             }
+
+            return exprAnd1;
         }
 
-        public void ExpressionAnd() {
-            ExpressionComp();
+        public Node ExpressionAnd() {
+            var expr1 = ExpressionComp();
 
             while(CurrentToken==TokenCategory.AND){
-                Expect(TokenCategory.AND);
-                ExpressionComp();
+                var expr2 = new And(){
+                    AnchorToken = Expect(TokenCategory.OR)
+                };
+                expr2.Add(expr1);
+                expr2.Add(ExpressionComp());
+                expr1 = expr2;
             }
+
+            return expr1;
         }
 
-        public void ExpressionComp() {
-            ExpressionRel();
+        public Node ExpressionComp() {
+            var expr1 = ExpressionRel();
 
             while(firstOfOperator.Contains(CurrentToken)){
-                OpComp();
-                ExpressionRel();
+                var expr2 = OpComp();
+                expr2.Add(expr1);
+                expr2.Add(ExpressionRel());
+                expr1 = expr2;
             }
+
+            return expr1;
         }
 
-        public void OpComp() {
+        public Node OpComp() {
             switch (CurrentToken) {
                 
             case TokenCategory.EQUAL_TO:
-            var result = new EqualTo(){
-                AnchorToken= Expect(TokenCategory.EQUAL_TO)
+                return new EqualTo(){
+                    AnchorToken = Expect(TokenCategory.EQUAL_TO)
                 };
-                return result;
 
             case TokenCategory.OP_COMP:
-                var result = new EqualTo(){
-                AnchorToken= Expect(TokenCategory.OP_COMP)
+                return new OpComp(){
+                     AnchorToken = Expect(TokenCategory.OP_COMP)
                 };
-                return result;
-                break;
 
             default:
                 throw new SyntaxError(firstOfOperator,
@@ -509,33 +551,42 @@ namespace Drac {
             }
         }
 
-        public void ExpressionRel() {
-            ExpressionAdd();
+        public Node ExpressionRel() {
+            var expr1 = ExpressionAdd();
 
             while(firstOfOperatorRel.Contains(CurrentToken)){
-                OpRel();
-                ExpressionAdd();
+                var expr2 = OpRel();
+                expr2.Add(expr1);
+                expr2.Add(ExpressionAdd());
+                expr1 = expr2;
             }
+
+            return expr1;
         }
 
-        public void OpRel() {
+        public Node OpRel() {
             switch (CurrentToken) {
 
             case TokenCategory.MORE:
-                Expect(TokenCategory.MORE);
-                break;
+                return new More(){
+                    AnchorToken = Expect(TokenCategory.MORE)
+                };
 
             case TokenCategory.MORE_EQUAL:
-                Expect(TokenCategory.MORE_EQUAL);
-                break;
+                return new MoreEqual(){
+                    AnchorToken = Expect(TokenCategory.MORE_EQUAL)
+                };
             
             case TokenCategory.LESS:
-                Expect(TokenCategory.LESS);
-                break;
+                return new Less(){
+                    AnchorToken = Expect(TokenCategory.LESS)
+                };
 
             case TokenCategory.LESS_EQUAL:
-                Expect(TokenCategory.LESS_EQUAL);
-                break;
+                
+                return new LessEqual(){
+                    AnchorToken = Expect(TokenCategory.LESS_EQUAL)
+                };
 
             default:
                 throw new SyntaxError(firstOfOperatorRel,
@@ -543,25 +594,31 @@ namespace Drac {
             }
         }
 
-        public void ExpressionAdd() {
-            ExpressionMul();
+        public Node ExpressionAdd() {
+            var expr1 = ExpressionMul();
 
             while(firstOfOperatorAdd.Contains(CurrentToken)){
-                OpAdd();
-                ExpressionMul();
+                var expr2 = OpAdd();
+                expr2.Add(expr1);
+                expr2.Add(ExpressionMul());
+                expr1 = expr2;
             }
+
+            return expr1;
         }
 
-        public void OpAdd() {
+        public Node OpAdd() {
             switch (CurrentToken) {
 
             case TokenCategory.ADD:
-                Expect(TokenCategory.ADD);
-                break;
+                return new Add(){
+                    AnchorToken = Expect(TokenCategory.ADD)
+                };
 
             case TokenCategory.SUBTR:
-                Expect(TokenCategory.SUBTR);
-                break;
+                return new Subtr(){
+                    AnchorToken = Expect(TokenCategory.SUBTR)
+                };
 
             default:
                 throw new SyntaxError(firstOfOperatorAdd,
@@ -569,29 +626,36 @@ namespace Drac {
             }
         }
 
-        public void ExpressionMul() {
-            ExpressionUnary();
+        public Node ExpressionMul() {
+            var expr1 = ExpressionUnary();
 
             while(firstOfOperatorMul.Contains(CurrentToken)){
-                OpMul();
-                ExpressionUnary();
+                var expr2 = OpMul();
+                expr2.Add(expr1);
+                expr2.Add(ExpressionUnary());
+                expr1 = expr2;
             }
+
+            return expr1;
         }
 
-        public void OpMul() {
+        public Node OpMul() {
             switch (CurrentToken) {
 
             case TokenCategory.MUL:
-                Expect(TokenCategory.MUL);
-                break;
+                return new Mul(){
+                    AnchorToken = Expect(TokenCategory.MUL)
+                };
 
             case TokenCategory.DIV:
-                Expect(TokenCategory.DIV);
-                break;
+                return new Div(){
+                    AnchorToken = Expect(TokenCategory.DIV)
+                };
             
             case TokenCategory.MOD:
-                Expect(TokenCategory.MOD);
-                break;
+                return new Mod(){
+                    AnchorToken = Expect(TokenCategory.MOD)
+                };
 
             default:
                 throw new SyntaxError(firstOfOperatorMul,
@@ -599,78 +663,101 @@ namespace Drac {
             }
         }
 
-        public void ExpressionUnary() {
-            while(firstOfOperatorUnary.Contains(CurrentToken)){
-                OpUnary();
+        public Node ExpressionUnary() {
+            if(firstOfOperatorUnary.Contains(CurrentToken)){
+                var result = OpUnary();
+
+                while(firstOfOperatorUnary.Contains(CurrentToken)){
+                    result.Add(OpUnary());
+                }
+                var expr = ExpressionPrimary();
+                result.Add(expr);
+                return result;
             }
-            ExpressionPrimary();
+            return ExpressionPrimary();
         }
 
-        public void OpUnary() {
+        public Node OpUnary() {
             switch (CurrentToken) {
 
             case TokenCategory.ADD:
-                Expect(TokenCategory.ADD);
-                break;
+                return new Add(){
+                    AnchorToken = Expect(TokenCategory.ADD)
+                };
 
             case TokenCategory.SUBTR:
-                Expect(TokenCategory.SUBTR);
-                break;
+                return new Subtr(){
+                    AnchorToken = Expect(TokenCategory.SUBTR)
+                };
             
             case TokenCategory.NOT:
-                Expect(TokenCategory.NOT);
-                break;
-
+                return new Not(){
+                    AnchorToken = Expect(TokenCategory.NOT)
+                };
             default:
                 throw new SyntaxError(firstOfOperatorUnary,
                                       tokenStream.Current);
             }
         }
 
-        public void ExpressionPrimary() {
+        public Node ExpressionPrimary() {
             switch (CurrentToken) {
 
             case TokenCategory.IDENTIFIER:
-                Expect(TokenCategory.IDENTIFIER);
+                var idToken = Expect(TokenCategory.IDENTIFIER);
 
                 if(CurrentToken==TokenCategory.PARENTHESIS_OPEN){
-                    FunCallSecond();
+                    Expect(TokenCategory.PARENTHESIS_OPEN);
+                    var exprList = ExprList();
+                    Expect(TokenCategory.PARENTHESIS_CLOSE);
+                    var result = new FuncCall(){ exprList };
+                    result.AnchorToken = idToken;
+                    return result;
                 }
-                break;
+                else{
+                    return new Identifier(){
+                        AnchorToken = idToken
+                    };
+                }
             
             case TokenCategory.INT_LITERAL:
-                Expect(TokenCategory.INT_LITERAL);
-                break;
+                return new IntLiteral(){
+                    AnchorToken = Expect(TokenCategory.INT_LITERAL)
+                };
 
             case TokenCategory.STRING:
-                Expect(TokenCategory.STRING);
-                break;
+                return new String(){
+                    AnchorToken = Expect(TokenCategory.STRING)
+                };
             
             case TokenCategory.CHAR:
-                Expect(TokenCategory.CHAR);
-                break;
+                return new Char(){
+                    AnchorToken = Expect(TokenCategory.CHAR)
+                };
             
             case TokenCategory.UNICODE_CHAR:
-                Expect(TokenCategory.UNICODE_CHAR);
-                break;
+                return new UnicodeChar(){
+                    AnchorToken = Expect(TokenCategory.UNICODE_CHAR)
+                };
             
             case TokenCategory.TRUE:
-                Expect(TokenCategory.TRUE);
-                break;
+                return new True(){
+                    AnchorToken = Expect(TokenCategory.TRUE)
+                };
 
             case TokenCategory.FALSE:
-                Expect(TokenCategory.FALSE);
-                break;
+                return new False(){
+                    AnchorToken = Expect(TokenCategory.FALSE)
+                };
 
             case TokenCategory.SQUARE_OPEN:
-                Array();
-                break;
+                return Array();
             
             case TokenCategory.PARENTHESIS_OPEN:
                 Expect(TokenCategory.PARENTHESIS_OPEN);
-                Expression();
+                var result2 = Expression();
                 Expect(TokenCategory.PARENTHESIS_CLOSE);
-                break;
+                return result2;
 
             default:
                 throw new SyntaxError(firstOfExpression,
@@ -678,10 +765,12 @@ namespace Drac {
             }
         }
 
-        public void Array() {
+        public Node Array() {
             Expect(TokenCategory.SQUARE_OPEN);
-            ExprList();
+            var exprlist = ExprList();
             Expect(TokenCategory.SQUARE_CLOSE);
+            var result = new Array(){exprlist};
+            return result;
         }
     }
 }
