@@ -16,15 +16,11 @@ namespace Drac {
 
     class VarDef: Node {}
 
-    class VarList: Node {}
-
     class VarDefList: Node {}
 
     class IdList: Node {}
 
     class FunDef: Node {}
-
-    class ParamList: Node {}
 
     class StatementList: Node {}
 
@@ -68,25 +64,11 @@ namespace Drac {
 
     class ExpressionList: Node {}
 
-    class ExprOr: Node {}
-
-    class ExprAnd: Node {}
-
-    class ExprComp: Node {}
-
     class EqualTo: Node {}
 
     class OpComp: Node {}
 
-    class ExprRel: Node {}
-
-    class ExpressionAdd: Node {}
-
-    class ExpressionMul: Node {}
-
     class ExpressionUnary: Node {}
-
-    class ExpressionPrimary: Node {}
 
     class True: Node {}
 

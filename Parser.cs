@@ -509,7 +509,7 @@ namespace Drac {
 
             while(CurrentToken==TokenCategory.AND){
                 var expr2 = new And(){
-                    AnchorToken = Expect(TokenCategory.OR)
+                    AnchorToken = Expect(TokenCategory.AND)
                 };
                 expr2.Add(expr1);
                 expr2.Add(ExpressionComp());
