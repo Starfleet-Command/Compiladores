@@ -5,10 +5,10 @@
 #Martín Alegría            A01022216
 
 drac.exe: Driver.cs Scanner.cs Token.cs TokenCategory.cs Parser.cs \
-	SyntaxError.cs SpecificNodes.cs Node.cs
+	SyntaxError.cs SpecificNodes.cs Node.cs SemanticVisitor.cs SemanticError.cs
 
 	mcs -out:drac.exe Driver.cs Scanner.cs Token.cs TokenCategory.cs Parser.cs \
-	SyntaxError.cs SpecificNodes.cs Node.cs
+	SyntaxError.cs SpecificNodes.cs Node.cs SemanticVisitor.cs SemanticError.cs
 
 clean:
 

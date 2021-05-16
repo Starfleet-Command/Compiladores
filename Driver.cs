@@ -14,13 +14,14 @@ namespace Drac {
 
     public class Driver {
 
-        const string VERSION = "0.3";
+        const string VERSION = "0.4";
 
         //-----------------------------------------------------------
         static readonly string[] ReleaseIncludes = {
             "Lexical analysis",
             "Syntactic analysis",
-            "AST construction"
+            "AST construction",
+            "Semantic analysis"
         };
 
         //-----------------------------------------------------------
@@ -73,11 +74,32 @@ namespace Drac {
                 Console.WriteLine("Syntax OK.");
 
                 Console.Write(program.ToStringTree());
+
+                
+                var semantic = new SemanticVisitor();
+                semantic.Visit((dynamic) program);
+                
+                Console.WriteLine("Semantics OK.");
+                Console.WriteLine();
+                Console.WriteLine("Variable Table");
+                Console.WriteLine("============");
+                foreach (var entry in semantic.VarTable) {
+                    Console.WriteLine(entry);
+                }
+                Console.WriteLine();
+                Console.WriteLine("Function Table");
+                Console.WriteLine("============");
+                foreach (var entry in semantic.FunTable) {
+                    Console.WriteLine(entry);
+                }
+                
                 
 
             } catch (Exception e) {
 
-                if (e is FileNotFoundException || e is SyntaxError) {
+                if (e is FileNotFoundException || e is SyntaxError
+                || e is SemanticError
+                ) {
                     Console.Error.WriteLine(e.Message);
                     Environment.Exit(1);
                 }
