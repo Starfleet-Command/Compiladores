@@ -78,7 +78,10 @@ namespace Drac {
                 
                 var semantic = new SemanticVisitor();
                 semantic.Visit((dynamic) program);
-                
+
+                var semantic2 = new SemanticVisitor2(semantic.VarTable, semantic.FunTable);
+                semantic2.Visit((dynamic) program);
+                //Console.WriteLine(semantic2.level);
                 Console.WriteLine("Semantics OK.");
                 Console.WriteLine();
                 Console.WriteLine("Variable Table");

@@ -176,11 +176,10 @@ namespace Drac {
                 defList.Add(Definition());
             }
 
-            Expect(TokenCategory.EOF);
+            var result = new Program(){ defList };
+            result.AnchorToken = Expect(TokenCategory.EOF);
 
-            return new Program() {
-                defList
-            };
+            return result;
         }
 
         public Node Definition() {
@@ -214,11 +213,7 @@ namespace Drac {
         }
 
         public Node VarList() {
-            return IdList();
-        }
-
-        public Node IdList() {
-            var result = new IdList();
+            var result = new VarList();
 
             result.Add(new Identifier() {
                 AnchorToken = Expect(TokenCategory.IDENTIFIER)
@@ -252,10 +247,19 @@ namespace Drac {
         }
 
         public Node ParamList() {
-            var result = new IdList();
+            var result = new ParamList();
 
             if (CurrentToken==TokenCategory.IDENTIFIER){
-                return IdList();
+                result.Add(new Identifier() {
+                    AnchorToken = Expect(TokenCategory.IDENTIFIER)
+                });
+
+                while (CurrentToken==TokenCategory.LIST_ELEMENT) {
+                    Expect(TokenCategory.LIST_ELEMENT);
+                    result.Add(new Identifier() {
+                        AnchorToken = Expect(TokenCategory.IDENTIFIER)
+                    });
+                }
             }
 
             return result;
@@ -665,11 +669,14 @@ namespace Drac {
 
         public Node ExpressionUnary() {
             if(firstOfOperatorUnary.Contains(CurrentToken)){
-                var result = OpUnary();
+                var result = new ExpressionUnary();
+                var opUL = new OpUnaryList();
 
                 while(firstOfOperatorUnary.Contains(CurrentToken)){
-                    result.Add(OpUnary());
+                    opUL.Add(OpUnary());
                 }
+                result.Add(opUL);
+
                 var expr = ExpressionPrimary();
                 result.Add(expr);
                 return result;

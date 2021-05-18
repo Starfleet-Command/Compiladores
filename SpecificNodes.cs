@@ -18,7 +18,9 @@ namespace Drac {
 
     class VarDefList: Node {}
 
-    class IdList: Node {}
+    class VarList: Node {}
+
+    class ParamList: Node {}
 
     class FunDef: Node {}
 
@@ -69,6 +71,8 @@ namespace Drac {
     class OpComp: Node {}
 
     class ExpressionUnary: Node {}
+
+    class OpUnaryList: Node {}
 
     class True: Node {}
 

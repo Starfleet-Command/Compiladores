@@ -28,6 +28,10 @@ namespace Drac {
             children.Add(node);
         }
 
+        public int Size(){
+            return children.Count;
+        }
+
         public IEnumerator<Node> GetEnumerator() {
             return children.GetEnumerator();
         }
