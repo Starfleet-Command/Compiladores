@@ -14,14 +14,15 @@ namespace Drac {
 
     public class Driver {
 
-        const string VERSION = "0.4";
+        const string VERSION = "0.5";
 
         //-----------------------------------------------------------
         static readonly string[] ReleaseIncludes = {
             "Lexical analysis",
             "Syntactic analysis",
             "AST construction",
-            "Semantic analysis"
+            "Semantic analysis",
+            "Wat code generation"
         };
 
         //-----------------------------------------------------------
@@ -58,6 +59,7 @@ namespace Drac {
 
             try {
                 var inputPath = args[0];
+                var outputPath = Path.ChangeExtension(inputPath, ".wat");
                 var input = File.ReadAllText(inputPath);
                 /*
                 Console.WriteLine(
@@ -81,9 +83,11 @@ namespace Drac {
 
                 var semantic2 = new SemanticVisitor2(semantic.VarTable, semantic.FunTable);
                 semantic2.Visit((dynamic) program);
-                //Console.WriteLine(semantic2.level);
+                
+                /*
                 Console.WriteLine("Semantics OK.");
                 Console.WriteLine();
+                
                 Console.WriteLine("Variable Table");
                 Console.WriteLine("============");
                 foreach (var entry in semantic.VarTable) {
@@ -95,9 +99,18 @@ namespace Drac {
                 foreach (var entry in semantic.FunTable) {
                     Console.WriteLine(entry);
                 }
+                */
                 
                 
-
+                var codeGenerator = new WatVisitor(semantic.VarTable, semantic.FunTable);
+                File.WriteAllText(
+                    outputPath,
+                    codeGenerator.Visit((dynamic) program));
+                Console.WriteLine(
+                    "Created Wat (WebAssembly text format) file "
+                    + $"'{outputPath}'.");
+                    
+                
             } catch (Exception e) {
 
                 if (e is FileNotFoundException || e is SyntaxError
