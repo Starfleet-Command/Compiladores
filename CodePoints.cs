@@ -1,3 +1,11 @@
+/*
+  Drac compiler - CodePoints class.
+
+  Rubén Sánchez             A01021759
+  Juan Francisco Gortarez   A01021926
+  Martín Alegría            A01022216
+*/
+
 using System;
 using System.Collections.Generic;
 
@@ -27,6 +35,12 @@ class CodePoints {
                         break;
                      case '\"':
                         result.Add(34);
+                        break;
+                    case 'u':
+                        var unicodeChr = str.Substring(i+2, 6);
+                        int decValue = Convert.ToInt32(unicodeChr, 16);
+                        result.Add(decValue);
+                        i+=6;
                         break;
                 }
                 i++;

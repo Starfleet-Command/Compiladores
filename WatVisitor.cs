@@ -49,13 +49,32 @@ namespace Drac {
             private set;
         }
 
+        public int ifCount{
+            get;
+            private set;
+        }
+
+        public int numMinus{
+            get;
+            private set;
+        }
+
+        public string currentBlock{
+            get;
+            private set;
+        }
+
         public WatVisitor(ISet<string> var, IDictionary<string, FuncProperties> fun) {
             VarTable = var;
             FunTable = fun;
             currentFunction = "";
             labelCounter = 0;
             hasReturn = 0;
-            level=0;
+            level = 0;
+            levelIf = 0;
+            ifCount = 0;
+            numMinus = 0;
+            currentBlock = "";
         }
 
         public string GenerateLabel() {
@@ -115,6 +134,8 @@ namespace Drac {
             currentFunction = funcName;
             var sb = new StringBuilder();
 
+            //Console.WriteLine(currentFunction);
+
             if(funcName=="main"){
                 sb.Append($"  (func\n");
                 sb.Append($"    (export \"main\")\n");
@@ -134,6 +155,7 @@ namespace Drac {
             sb.Append($"  )\n");
 
             hasReturn = 0;
+            currentFunction="";
 
             return sb.ToString();
         }
@@ -198,17 +220,40 @@ namespace Drac {
         }
 
         public string Visit(Inc node) {
+            var variableName = node[0].AnchorToken.Lexeme;
+            var sb = new StringBuilder();
+            var props = FunTable[currentFunction];
+
+            if(props.reference.ContainsKey(variableName)){
+                sb.Append($"    local.set ${variableName}\n");
+            }
+            else{
+                sb.Append($"    global.set ${variableName}\n");
+            }
+
+
             return Visit((dynamic) node[0])
                 + $"    i32.const 1\n"
                 + $"    i32.add\n"
-                + $"    local.set ${node[0].AnchorToken.Lexeme}\n";
+                + sb.ToString();
         }
 
         public string Visit(Dec node) {
+            var sb = new StringBuilder();
+            var variableName = node[0].AnchorToken.Lexeme;
+            var props = FunTable[currentFunction];
+
+            if(props.reference.ContainsKey(variableName)){
+                sb.Append($"    local.set ${variableName}\n");
+            }
+            else{
+                sb.Append($"    global.set ${variableName}\n");
+            }
+
             return Visit((dynamic) node[0])
                 + $"    i32.const 1\n"
                 + $"    i32.sub\n"
-                + $"    local.set ${node[0].AnchorToken.Lexeme}\n";
+                + sb.ToString();
         }
         
         public string Visit(Return node) {
@@ -228,14 +273,33 @@ namespace Drac {
         }
 
         public string Visit(Break node) {
-            return $"    br 0\n";
+            return $"    br {currentBlock}\n";
         }
         
         public string Visit(ExpressionList node) {
             return VisitChildren(node);
         }
 
+        public string Visit(Array node) {
+            var sb = new StringBuilder();
 
+            sb.Append($"    i32.const 0\n");
+            sb.Append($"    call $new\n");
+            sb.Append($"    local.set $_temp\n");
+            sb.Append($"    local.get $_temp\n");
+
+            foreach (var n in node[0]) {
+                sb.Append($"    local.get $_temp\n");
+            }
+
+            foreach (var n in node[0]) {
+                sb.Append(Visit((dynamic) n));
+                sb.Append($"    call $add\n");
+                sb.Append($"    drop\n");
+            }
+
+            return sb.ToString();
+        }
 
 
         public string Visit(String node) {
@@ -277,13 +341,34 @@ namespace Drac {
             return sb.ToString();
         }
 
+        public string Visit(UnicodeChar node) {
+            var chr = node.AnchorToken.Lexeme;
+            var sb = new StringBuilder();
+
+            var unicodeChr = chr.Substring(3, 6);
+
+            int decValue = Convert.ToInt32(unicodeChr, 16);
+
+            sb.Append($"    i32.const {decValue}\n");
+
+            return sb.ToString();
+        }
+
         public string Visit(IntLiteral node) {
             return $"    i32.const {node.AnchorToken.Lexeme}\n";
         }
 
         
         public string Visit(Identifier node) {
-            return $"    local.get ${node.AnchorToken.Lexeme}\n";
+            var variableName = node.AnchorToken.Lexeme;
+            var props = FunTable[currentFunction];
+
+            if(props.reference.ContainsKey(variableName)){
+                return $"    local.get ${variableName}\n";
+            }
+            else{
+                return $"    global.get ${variableName}\n";
+            }
         }
         
         public string Visit(If node) {
@@ -296,7 +381,16 @@ namespace Drac {
             sb.Append(Visit((dynamic) node[1]));
             sb.Append(Visit((dynamic) node[2]));
             sb.Append(Visit((dynamic) node[3]));
+
+            ifCount+=node[2].Size();
+
+            for(var i=0; i<ifCount; i++){
+                sb.Append("    end\n");
+            }
+
             sb.Append("    end\n");
+
+            ifCount=0;
             levelIf--;
 
             return sb.ToString();
@@ -307,11 +401,14 @@ namespace Drac {
         }
 
         public string Visit(ElseIf node) {
-            return "    else\n"
-                + Visit((dynamic) node[0])
-                + "    if\n"
-                + Visit((dynamic) node[1])
-                + "    end\n";
+            var sb = new StringBuilder();
+
+            sb.Append("    else\n");
+            sb.Append(Visit((dynamic) node[0]));
+            sb.Append("    if\n");
+            sb.Append(Visit((dynamic) node[1]));
+
+            return sb.ToString();
         }
 
         public string Visit(Else node) {
@@ -324,7 +421,11 @@ namespace Drac {
 
         public string Visit(While node) {
             var sb = new StringBuilder();
+
+            var previousLabel = currentBlock;
+
             var labelBlock = GenerateLabel();
+            currentBlock = labelBlock;
             var labelLoop = GenerateLabel();
 
             sb.Append($"    block {labelBlock}\n");
@@ -338,13 +439,19 @@ namespace Drac {
             sb.Append($"    br {labelLoop}\n");
             sb.Append($"    end\n");
             sb.Append($"    end\n");
+
+            currentBlock = previousLabel;
 
             return sb.ToString();
         }
 
         public string Visit(DoWhile node) {
             var sb = new StringBuilder();
+
+            var previousLabel = currentBlock;
+
             var labelBlock = GenerateLabel();
+            currentBlock = labelBlock;
             var labelLoop = GenerateLabel();
 
             sb.Append($"    block {labelBlock}\n");
@@ -358,6 +465,8 @@ namespace Drac {
             sb.Append($"    br {labelLoop}\n");
             sb.Append($"    end\n");
             sb.Append($"    end\n");
+
+            currentBlock = previousLabel;
 
             return sb.ToString();
         }
@@ -365,8 +474,28 @@ namespace Drac {
         public string Visit(ExpressionUnary node) {
             var sb = new StringBuilder();
 
+            var nodeName = node[0][0].AnchorToken.Lexeme;
+
+            var minus = 0;
+
+            if(nodeName=="-"){
+                Visit((dynamic) node[0]);
+                minus = 1;
+            }
+
+            if(numMinus%2==1){
+                sb.Append("    i32.const 0\n"); 
+            }
+
             sb.Append(Visit((dynamic) node[1]));
-            sb.Append(Visit((dynamic) node[0]));
+            if(minus==0){
+                sb.Append(Visit((dynamic) node[0]));
+            }
+            else if(numMinus%2==1){
+                sb.Append("    i32.sub\n"); 
+            }
+
+            numMinus=0;
 
             return sb.ToString();
         }
@@ -443,12 +572,19 @@ namespace Drac {
         }
 
         public string Visit(Add node) {
+            if(node.Size()==0){
+                return "";
+            }
             return Visit((dynamic) node[0])
                 + Visit((dynamic) node[1])
                 + $"    i32.add\n";
         }
 
         public string Visit(Subtr node) {
+            if(node.Size()==0){
+                numMinus++;
+                return "";
+            }
             return Visit((dynamic) node[0])
                 + Visit((dynamic) node[1])
                 + $"    i32.sub\n";
@@ -483,108 +619,6 @@ namespace Drac {
                 + Visit((dynamic) node[1])
                 + $"    i32.ne\n";
         }
-
-        /*
-        //-----------------------------------------------------------
-        public string Visit(DeclarationList node) {
-            // The code for the local variable declarations is
-            // generated directly from the symbol table, not from
-            // the AST nodes.
-            var sb = new StringBuilder();
-            foreach (var entry in table) {
-                sb.Append($"    (local ${entry.Key} i32)\n");
-            }
-            return sb.ToString();
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(StatementList node) {
-            return VisitChildren(node);
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(Assignment node) {
-            return Visit((dynamic) node[0])
-                + $"    local.set ${node.AnchorToken.Lexeme}\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(Print node) {
-            return Visit((dynamic) node[0])
-                + $"    call ${PrintInstructions[node.ExpressionType]}\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(If node) {
-            return Visit((dynamic) node[0])
-                + "    if\n"
-                + Visit((dynamic) node[1])
-                + "    end\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(Identifier node) {
-            return $"    local.get ${node.AnchorToken.Lexeme}\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(IntLiteral node) {
-            return $"    i32.const {node.AnchorToken.Lexeme}\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(True node) {
-            return "    i32.const 1\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(False node) {
-            return "    i32.const 0\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(Neg node) {
-            return "    i32.const 0\n"
-                + Visit((dynamic) node[0])
-                + "    i32.sub\n";
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(And node) {
-            return VisitBinaryOperator("i32.and", node);
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(Less node) {
-            return VisitBinaryOperator("i32.lt_s", node);
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(Plus node) {
-            return VisitBinaryOperator("i32.add", node);
-        }
-
-        //-----------------------------------------------------------
-        public string Visit(Mul node) {
-            return VisitBinaryOperator("i32.mul", node);
-        }
-
-        //-----------------------------------------------------------
-        string VisitChildren(Node node) {
-            var sb = new StringBuilder();
-            foreach (var n in node) {
-                sb.Append(Visit((dynamic) n));
-            }
-            return sb.ToString();
-        }
-
-        //-----------------------------------------------------------
-        string VisitBinaryOperator(string op, Node node) {
-            return Visit((dynamic) node[0])
-                + Visit((dynamic) node[1])
-                + $"    {op}\n";
-        }
-        */
 
         string VisitChildren(Node node) {
             var sb = new StringBuilder();

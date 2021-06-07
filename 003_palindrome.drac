@@ -1,4 +1,4 @@
-(* File: 003_palindrome.leviathan
+(* File: 003_palindrome.drac
    Determines if a string is a palindrome.
    (C) 2021 Ariel Ortiz, ITESM CEM.
 *)

@@ -1,4 +1,4 @@
-(* File: 002_binary.leviathan
+(* File: 002_binary.drac
    Converts decimal numbers into binary.
    (C) 2021 Ariel Ortiz, ITESM CEM.
 *)

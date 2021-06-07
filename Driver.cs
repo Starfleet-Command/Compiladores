@@ -74,9 +74,9 @@ namespace Drac {
                     new Scanner(input).Scan().GetEnumerator());
                 var program = parser.Program();
                 Console.WriteLine("Syntax OK.");
-
+                /*
                 Console.Write(program.ToStringTree());
-
+                */
                 
                 var semantic = new SemanticVisitor();
                 semantic.Visit((dynamic) program);
@@ -84,10 +84,10 @@ namespace Drac {
                 var semantic2 = new SemanticVisitor2(semantic.VarTable, semantic.FunTable);
                 semantic2.Visit((dynamic) program);
                 
-                /*
+                
                 Console.WriteLine("Semantics OK.");
                 Console.WriteLine();
-                
+                /*
                 Console.WriteLine("Variable Table");
                 Console.WriteLine("============");
                 foreach (var entry in semantic.VarTable) {
@@ -109,7 +109,7 @@ namespace Drac {
                 Console.WriteLine(
                     "Created Wat (WebAssembly text format) file "
                     + $"'{outputPath}'.");
-                    
+                
                 
             } catch (Exception e) {
 
